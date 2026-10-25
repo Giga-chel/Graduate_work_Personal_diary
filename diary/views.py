@@ -57,13 +57,17 @@ class EntryCreateView(LoginRequiredMixin, generic.CreateView):
 
 
 class EntryUpdateView(LoginRequiredMixin, generic.UpdateView):
-    """Редактирование — только свои записи."""
+    """Редактирование — автор или модератор (право change_entry)."""
 
     template_name = 'diary/entry_form.html'
     form_class = EntryForm
+    success_url = reverse_lazy('diary:entry_list')
 
     def get_queryset(self):
-        return Entry.objects.filter(owner=self.request.user)
+        queryset = Entry.objects.select_related('owner')
+        if not self.request.user.has_perm('diary.change_entry'):
+            queryset = queryset.filter(owner=self.request.user)
+        return queryset
 
     def form_valid(self, form):
         messages.success(self.request, 'Запись обновлена.')
@@ -71,13 +75,16 @@ class EntryUpdateView(LoginRequiredMixin, generic.UpdateView):
 
 
 class EntryDeleteView(LoginRequiredMixin, generic.DeleteView):
-    """Удаление — только свои записи."""
+    """Удаление — автор или модератор (право change_entry)."""
 
     template_name = 'diary/entry_confirm_delete.html'
     success_url = reverse_lazy('diary:entry_list')
 
     def get_queryset(self):
-        return Entry.objects.filter(owner=self.request.user)
+        queryset = Entry.objects.select_related('owner')
+        if not self.request.user.has_perm('diary.change_entry'):
+            queryset = queryset.filter(owner=self.request.user)
+        return queryset
 
 
 class RegisterView(generic.CreateView):

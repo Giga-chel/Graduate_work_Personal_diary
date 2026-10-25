@@ -90,3 +90,6 @@ LOGIN_REDIRECT_URL = 'diary:entry_list'
 LOGOUT_REDIRECT_URL = 'login'
 
 MESSAGE_TAGS = {message_constants.ERROR: 'danger'}
+
+WSGI_APPLICATION = 'config.wsgi.application'
+ROOT_URLCONF = 'config.urls'
