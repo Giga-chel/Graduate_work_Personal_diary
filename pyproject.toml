@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "pythonproject14"
+version = "0.1.0"
+description = ""
+authors = ["Eugen <trushin00332211@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.14"
+django = "^6.1.2"
+psycopg = {extras = ["binary"], version = "^3.3.6"}
+python-dotenv = "^1.2.4"
+whitenoise = "^6.12.0"
+gunicorn = "^26.2.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "flake8 (>=7.4.1,<8.0.0)"
+]
