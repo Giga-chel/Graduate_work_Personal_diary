@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ entry.title }} — Личный дневник{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-start">
+            <h1 class="h3 mb-0">{{ entry.title }}</h1>
+            {% if entry.owner == user or perms.diary.change_entry %}
+                <div class="btn-group ms-3">
+                    <a href="{% url 'diary:entry_update' entry.pk %}"
+                       class="btn btn-outline-secondary btn-sm" title="Редактировать">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <a href="{% url 'diary:entry_delete' entry.pk %}"
+                       class="btn btn-outline-danger btn-sm" title="Удалить">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+        <p class="text-muted small mt-2">
+            {{ entry.created_at|date:'d.m.Y H:i' }} · {{ entry.owner.username }}
+            {% if entry.updated_at|date:'YmdHi' > entry.created_at|date:'YmdHi' %}
+                · обновлено {{ entry.updated_at|date:'d.m.Y H:i' }}
+            {% endif %}
+        </p>
+        <hr>
+        <div class="lead">{{ entry.content|linebreaksbr }}</div>
+        <a href="{% url 'diary:entry_list' %}" class="btn btn-link ps-0 mt-2">← Ко всем записям</a>
+    </div>
+</div>
+{% endblock %}

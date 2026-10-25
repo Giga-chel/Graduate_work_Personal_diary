@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Мои записи — Личный дневник{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">
+        {% if search %}Результаты: «{{ search }}»{% else %}Записи{% endif %}
+    </h1>
+    <a href="{% url 'diary:entry_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Добавить
+    </a>
+</div>
+
+{% if entries %}
+    <div class="row g-3">
+        {% for entry in entries %}
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ entry.title }}</h5>
+                        <p class="card-text text-muted small mb-2">
+                            {{ entry.created_at|date:'d.m.Y H:i' }}
+                            {% if entry.owner != user %} · {{ entry.owner.username }}{% endif %}
+                        </p>
+                        <p class="card-text">{{ entry.content|truncatewords:20|linebreaksbr }}</p>
+                        <a href="{% url 'diary:entry_detail' entry.pk %}"
+                           class="stretched-link">Читать далее →</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if is_paginated %}
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ search|urlencode }}">←</a>
+                    </li>
+                {% endif %}
+                <li class="page-item active">
+                    <span class="page-link">{{ page_obj.number }} из {{ paginator.num_pages }}</span>
+                </li>
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ search|urlencode }}">→</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+{% elif search %}
+    <div class="alert alert-info">По запросу «{{ search }}» ничего не найдено.</div>
+{% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-journal-x display-1 text-secondary"></i>
+        <p class="lead mt-3">В дневнике пока нет записей.</p>
+        <a href="{% url 'diary:entry_create' %}" class="btn btn-primary">Создать первую</a>
+    </div>
+{% endif %}
+{% endblock %}
