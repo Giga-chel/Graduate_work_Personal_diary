@@ -5,7 +5,6 @@ from django.db import models
 class Entry(models.Model):
     """Запись личного дневника: заголовок, текст, автор, время создания."""
 
-
     title = models.CharField('заголовок', max_length=200)
     content = models.TextField('содержание')
     created_at = models.DateTimeField('дата создания', auto_now_add=True)
