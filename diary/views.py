@@ -1,3 +1,7 @@
+from typing import Any
+
+from django.db.models import QuerySet
+from django.http import HttpResponse
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -17,7 +21,8 @@ class EntryListView(LoginRequiredMixin, generic.ListView):
     context_object_name = 'entries'
     paginate_by = 6
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[Entry]:
+        """Свои записи — для пользователя, все — для модератора."""
         queryset = Entry.objects.select_related('owner')
         if not self.request.user.has_perm('diary.view_all_entries'):
             queryset = queryset.filter(owner=self.request.user)
@@ -28,7 +33,8 @@ class EntryListView(LoginRequiredMixin, generic.ListView):
             )
         return queryset
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        """Добавляет поисковый запрос в контекст списка."""
         context = super().get_context_data(**kwargs)
         context['search'] = self.request.GET.get('q', '')
         return context
@@ -39,7 +45,7 @@ class EntryDetailView(LoginRequiredMixin, generic.DetailView):
 
     template_name = 'diary/entry_detail.html'
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[Entry]:
         if self.request.user.has_perm('diary.view_all_entries'):
             return Entry.objects.all()
         return Entry.objects.filter(owner=self.request.user)
@@ -50,7 +56,8 @@ class EntryCreateView(LoginRequiredMixin, generic.CreateView):
     form_class = EntryForm
     success_url = reverse_lazy('diary:entry_list')
 
-    def form_valid(self, form):
+    def form_valid(self, form: EntryForm) -> HttpResponse:
+        """Привязывает новую запись к текущему пользователю."""
         form.instance.owner = self.request.user
         messages.success(self.request, 'Запись добавлена.')
         return super().form_valid(form)
@@ -63,13 +70,13 @@ class EntryUpdateView(LoginRequiredMixin, generic.UpdateView):
     form_class = EntryForm
     success_url = reverse_lazy('diary:entry_list')
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[Entry]:
         queryset = Entry.objects.select_related('owner')
         if not self.request.user.has_perm('diary.change_entry'):
             queryset = queryset.filter(owner=self.request.user)
         return queryset
 
-    def form_valid(self, form):
+    def form_valid(self, form: EntryForm) -> HttpResponse:
         messages.success(self.request, 'Запись обновлена.')
         return super().form_valid(form)
 
@@ -80,7 +87,7 @@ class EntryDeleteView(LoginRequiredMixin, generic.DeleteView):
     template_name = 'diary/entry_confirm_delete.html'
     success_url = reverse_lazy('diary:entry_list')
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[Entry]:
         queryset = Entry.objects.select_related('owner')
         if not self.request.user.has_perm('diary.change_entry'):
             queryset = queryset.filter(owner=self.request.user)
@@ -92,7 +99,7 @@ class RegisterView(generic.CreateView):
     form_class = RegisterForm
     success_url = reverse_lazy('diary:entry_list')
 
-    def form_valid(self, form):
+    def form_valid(self, form: EntryForm) -> HttpResponse:
         user = form.save()
         login(self.request, user)
         messages.success(self.request, 'Добро пожаловать в ваш дневник!')

@@ -3,7 +3,8 @@ from django.db import models
 
 
 class Entry(models.Model):
-    """Запись в личном дневнике."""
+    """Запись личного дневника: заголовок, текст, автор, время создания."""
+
 
     title = models.CharField('заголовок', max_length=200)
     content = models.TextField('содержание')
@@ -22,5 +23,6 @@ class Entry(models.Model):
         ordering = ['-created_at']
         permissions = [('view_all_entries', 'Может просматривать чужие записи')]
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Возвращает заголовок записи (для админки и списков)."""
         return self.title

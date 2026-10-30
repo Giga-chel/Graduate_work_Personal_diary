@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: diary
+          POSTGRES_USER: diary_user
+          POSTGRES_PASSWORD: diary_pass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U diary_user"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      SECRET_KEY: ci-secret-for-tests
+      DEBUG: 'True'
+      POSTGRES_DB: diary
+      POSTGRES_USER: diary_user
+      POSTGRES_PASSWORD: diary_pass
+      DB_HOST: localhost
+      DB_PORT: '5432'
+      ALLOWED_HOSTS: localhost,127.0.0.1
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Install dependencies
+        run: poetry install --only main --no-interaction --no-ansi
+
+      - name: flake8
+        run: pip install flake8 && flake8 .
+
+      - name: Check migrations
+        run: poetry run python manage.py makemigrations --check --dry-run
+
+      - name: Run tests
+        run: poetry run python manage.py test --verbosity 2
+
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build -t diary-web:${{ github.sha }} .
