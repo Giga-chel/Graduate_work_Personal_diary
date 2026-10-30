@@ -1,3 +1,5 @@
+from typing import Any
+
 from django.contrib.auth.models import Group, Permission
 from django.core.management.base import BaseCommand
 
@@ -5,7 +7,8 @@ from django.core.management.base import BaseCommand
 class Command(BaseCommand):
     help = 'Создаёт группы пользователей и назначает права'
 
-    def handle(self, *args, **options):
+    def handle(self, *args: Any, **options: Any) -> None:
+        """Создаёт группы «Модераторы»/«Пользователи» с правами (идемпотентно)."""
         moderators, _ = Group.objects.get_or_create(name='Модераторы')
 
         change_perm = Permission.objects.get(
